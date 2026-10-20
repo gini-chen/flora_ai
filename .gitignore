@@ -1,4 +1,34 @@
+# Credentials stay local. The example contains no credentials.
+.env
+.env.*
+!.env.example
+.streamlit/secrets*.toml
+!.streamlit/secrets.example.toml
+.aws/
+*.pem
+*.key
+
+# Python environments and generated files
 .venv/
-.streamlit/secrets.toml
+venv/
 __pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+
+# Local notes, scratch code, and business data exports
+/notes
+/notes.*
+/instructions*
+/dashboard.py
+/cost_model.py
+/private/
+/local/
+*.csv
+
+# Editor and operating system files
+.idea/
+.vscode/
 .DS_Store

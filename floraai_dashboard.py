@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 
-# 1. The same reusable class pattern as your notebook.
+# Batch cost calculation shared by the dashboard inputs.
 class BouquetCost:
     def __init__(self, hourly_rate):
         self.hourly_rate = hourly_rate
@@ -15,16 +15,14 @@ class BouquetCost:
         return materials_used + parking + hours * self.hourly_rate + other_costs
 
 
-# 2. Dashboard layout.
+# Dashboard layout.
 st.set_page_config(page_title="FloraAI Cost Dashboard", page_icon="🌷", layout="wide")
 st.title("🌷 FloraAI Cost Dashboard")
-st.caption("cost planning tool")
-st.info(
-    "Planning estimates, not recorded sales."
-)
+st.caption("Plan batch costs, compare selling prices, and download your scenario.")
+st.info("Planning estimates, not recorded sales.")
 
 
-# 3. Sidebar inputs. Streamlit reruns calculations when these change.
+# Streamlit reruns calculations when these inputs change.
 st.sidebar.header("1. Supplier and output")
 supplier = st.sidebar.selectbox("Supplier", ["Trader Joe's", "Downtown Flower Market"])
 is_tj = supplier == "Trader Joe's"
@@ -43,13 +41,13 @@ main_bunches = st.sidebar.number_input("Main flower bunches", min_value=0, value
 main_price = st.sidebar.number_input(
     "Price per main bunch ($)", min_value=0.0,
     value=12.99 if is_tj else 13.99, step=0.50, key=f"{supplier}_main_price",
-    help="Your Downtown planning range is $10–$20 per bunch.",
+    help="Example Downtown planning range: $10–$20 per bunch. Enter your supplier's actual price.",
 )
 green_bunches = st.sidebar.number_input("Greenery bunches", min_value=0, value=2, step=1)
 green_price = st.sidebar.number_input(
     "Price per greenery bunch ($)", min_value=0.0,
     value=3.99 if is_tj else 6.99, step=0.50, key=f"{supplier}_green_price",
-    help="Your Downtown planning range is $5–$15 per bunch.",
+    help="Example Downtown planning range: $5–$15 per bunch. Enter your supplier's actual price.",
 )
 wrapping = st.sidebar.number_input(
     "Wrapping allocated to this batch ($)", min_value=0.0, value=10.91, step=0.50,
@@ -74,7 +72,7 @@ hourly_rate = st.sidebar.number_input(
 parking = st.sidebar.number_input(
     "Parking for the batch ($)", min_value=0.0,
     value=0.0 if is_tj else 10.35, step=0.50, key=f"{supplier}_parking",
-    help="TJ parking is free per your notes. Downtown's $10.35 default comes from B002; confirm it for future trips.",
+    help="Editable planning estimate. Enter the parking expense for this batch.",
 )
 other = st.sidebar.number_input(
     "Other costs for this batch ($)", min_value=0.0, value=0.0, step=0.50,
@@ -87,7 +85,7 @@ selling_price = st.sidebar.number_input(
 )
 
 
-# 4. DataFrame and calculations.
+# Purchase plan and batch calculations.
 plan = pd.DataFrame({
     "Item": ["Main flowers", "Greenery"],
     "Bunches": [main_bunches, green_bunches],
@@ -110,7 +108,7 @@ contribution = selling_price - cost_per_bouquet
 margin = contribution / selling_price * 100 if selling_price > 0 else None
 
 
-# 5. Key numbers.
+# Key numbers.
 st.subheader(f"{supplier} · {size} · {bouquets} bouquet(s) per batch")
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Batch cost", f"${batch_cost:,.2f}")
@@ -141,7 +139,7 @@ with right:
     st.bar_chart(breakdown)
 
 
-# 6. Price comparison, holding this selected batch's costs constant.
+# Price comparison, holding this selected batch's costs constant.
 st.subheader("Compare selling prices")
 prices = pd.DataFrame({"Selling price ($)": [100, 125, 150, 175, 200]})
 prices["Cost per bouquet ($)"] = cost_per_bouquet
@@ -151,7 +149,7 @@ st.dataframe(prices.round(2), hide_index=True)
 st.caption("These are alternative price scenarios, not actual orders. Do not sum their contributions as revenue.")
 
 
-# 7. Download all inputs and the selected scenario's results.
+# Download all inputs and the selected scenario's results.
 record = pd.DataFrame([{
     "status": "Planning scenario", "supplier": supplier, "size": size,
     "bouquets": bouquets, "main_bunches": main_bunches, "main_price": main_price,
